@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function perfil() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+    function tienePerfil() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+    }
+    function esAdmin() {
+      return tienePerfil() && perfil().rol == 'admin';
+    }
+    function estaHabilitado() {
+      return tienePerfil() && perfil().habilitado == true;
+    }
+
+    // Cada persona lee solo su perfil; el admin lee y escribe todos.
+    match /usuarios/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || esAdmin());
+      allow write: if esAdmin();
+    }
+
+    // Capítulos: leen los habilitados, escribe solo el admin.
+    match /capitulos/{id} {
+      allow read: if estaHabilitado();
+      allow write: if esAdmin();
+    }
+  }
+}

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Historias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --noche:#1a120d;
+  --noche-2:#2c1f15;
+  --niebla:#eadfc8;
+  --luz:#e9b866;
+  --musgo:#7fc4b0;
+  --tinta:#140d09;
+  --alerta:#ff8a8a;
+  --titulo:"Grenze Gotisch","Palatino Linotype",Georgia,serif;
+  --texto:"Lora",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  background:linear-gradient(rgba(20,12,8,.84),rgba(20,12,8,.9)),
+             url("img/fondo.jpg") center/cover no-repeat,
+             var(--noche);
+  background-attachment:fixed;
+  color:var(--niebla);
+  font-family:var(--texto);
+  font-size:1.05rem;
+  line-height:1.7;
+}
+h1,h2,h3{font-family:var(--titulo);font-weight:700;line-height:1.1;margin:0 0 .5em;color:#fff}
+a{color:var(--musgo)}
+button,input,textarea{font:inherit}
+:focus-visible{outline:3px solid var(--luz);outline-offset:2px}
+#luciernagas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.vista{position:relative;z-index:1;display:none;min-height:100vh}
+.vista.activa{display:block}
+.ancho{max-width:1000px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+
+/* Botones */
+.btn{
+  display:inline-block;border:0;cursor:pointer;text-decoration:none;
+  background:var(--luz);color:var(--tinta);font-weight:600;
+  padding:.8rem 1.6rem;border-radius:999px;
+  box-shadow:0 0 0 0 rgba(233,184,102,.6);
+  transition:transform .15s,box-shadow .25s;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 0 28px 4px rgba(233,184,102,.45)}
+.btn.sec{background:transparent;color:var(--niebla);border:1.5px solid var(--niebla)}
+.btn.sec:hover{box-shadow:0 0 22px 2px rgba(234,223,200,.3)}
+.btn.chico{padding:.4rem .9rem;font-size:.9rem}
+.btn.peligro{background:transparent;color:var(--alerta);border:1.5px solid var(--alerta)}
+
+/* Inicio */
+.barra{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem 1.25rem;max-width:1000px;margin:0 auto}
+.marca{font-family:var(--titulo);font-size:1.4rem;color:var(--luz)}
+.portada-grid{display:grid;grid-template-columns:1fr;gap:2.5rem;align-items:center;padding:2rem 0}
+@media(min-width:800px){.portada-grid{grid-template-columns:1.1fr .9fr}}
+.portada-grid h1{font-size:clamp(2.4rem,7vw,4.4rem)}
+.portada-grid p{max-width:34ch;font-size:1.15rem}
+.acciones{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.5rem}
+.libro{position:relative;justify-self:center;width:min(300px,78vw)}
+.libro::before{
+  content:"";position:absolute;inset:-10%;border-radius:50%;
+  background:radial-gradient(circle,rgba(233,184,102,.35),transparent 65%);
+}
+.libro img,.libro .falsa{
+  position:relative;display:block;width:100%;aspect-ratio:2/3;object-fit:cover;
+  border-radius:6px 14px 14px 6px;
+  box-shadow:-8px 0 0 #140d09,0 24px 50px rgba(0,0,0,.55);
+  transform:rotate(-2.5deg);
+}
+.libro .falsa{
+  display:flex;align-items:center;justify-content:center;text-align:center;padding:1.5rem;
+  background:linear-gradient(160deg,var(--noche-2),#4a3322);
+  font-family:var(--titulo);font-size:1.8rem;color:var(--luz);
+}
+
+/* Galería */
+.galeria{display:grid;grid-template-columns:1fr;gap:1.2rem;padding:1rem 0 2rem}
+@media(min-width:700px){.galeria{grid-template-columns:1fr 1fr}}
+.galeria figure{margin:0}
+.galeria img{width:100%;aspect-ratio:3/2;object-fit:cover;object-position:center 60%;border-radius:10px;border:1px solid rgba(234,223,200,.25);display:block}
+.galeria figcaption{margin-top:.5rem;font-size:.95rem;opacity:.85}
+
+/* Formularios */
+.caja{
+  background:rgba(20,13,9,.78);
+  border:1px solid rgba(234,223,200,.22);
+  border-radius:14px;padding:1.6rem;
+  backdrop-filter:blur(6px);
+}
+.login{max-width:420px;margin:0 auto;padding-top:12vh}
+label{display:block;margin:.9rem 0 .3rem;font-size:.95rem}
+input[type=text],input[type=password],input[type=number],textarea{
+  width:100%;padding:.7rem .85rem;border-radius:8px;
+  border:1.5px solid rgba(234,223,200,.35);
+  background:var(--tinta);color:#fff;
+}
+textarea{min-height:260px;resize:vertical;line-height:1.6}
+.error{color:var(--alerta);min-height:1.4em;margin:.8rem 0 0}
+.ok{color:var(--musgo)}
+
+/* Lector */
+.lector{display:grid;grid-template-columns:1fr;gap:1.5rem}
+@media(min-width:860px){.lector{grid-template-columns:240px 1fr;align-items:start}}
+.indice{position:sticky;top:1rem}
+.indice ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.35rem;max-height:60vh;overflow:auto}
+.indice button{
+  width:100%;text-align:left;cursor:pointer;color:var(--niebla);
+  background:transparent;border:1px solid transparent;border-radius:8px;padding:.5rem .7rem;
+}
+.indice button:hover{border-color:rgba(234,223,200,.35)}
+.indice button[aria-current=true]{background:rgba(233,184,102,.14);border-color:var(--luz);color:#fff}
+.capitulo{padding:2rem 1.5rem}
+.capitulo h2{font-size:clamp(1.9rem,5vw,2.8rem);color:var(--luz)}
+.capitulo .num{margin:0 0 .3rem;color:var(--musgo)}
+.capitulo .cuerpo p{margin:0 0 1.15em;max-width:62ch}
+.nav-cap{display:flex;justify-content:space-between;gap:1rem;margin-top:2rem}
+.vacio{padding:2rem;text-align:center}
+
+/* Admin */
+.pestanas{display:flex;gap:.6rem;margin:1rem 0 1.5rem;flex-wrap:wrap}
+.pestanas button[aria-selected=true]{background:var(--luz);color:var(--tinta);border-color:var(--luz)}
+.fila{
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  padding:.8rem 0;border-bottom:1px solid rgba(234,223,200,.15);
+}
+.fila:last-child{border-bottom:0}
+.fila small{opacity:.75}
+.estado{font-weight:600}
+.estado.si{color:var(--musgo)}
+.estado.no{color:var(--alerta)}
+.dos{display:grid;grid-template-columns:1fr;gap:1.5rem}
+@media(min-width:860px){.dos{grid-template-columns:1fr 1fr}}
+.modal{
+  position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;
+  background:rgba(20,13,9,.85);padding:1rem;
+}
+.modal.abierto{display:flex}
+.modal .caja{max-width:420px;background:var(--noche-2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="luciernagas" aria-hidden="true"></canvas>
+
+<!-- INICIO -->
+<section id="v-inicio" class="vista activa">
+  <div class="barra">
+    <span class="marca" id="marca"></span>
+    <button class="btn sec chico" data-ir="login">Ingresar</button>
+  </div>
+  <div class="ancho">
+    <div class="portada-grid">
+      <div>
+        <h1>Descubre las historias de <span id="titulo-h1"></span></h1>
+        <p>Relatos fantásticos que se siguen escribiendo. Entrá con tu cuenta y leelos desde el primer capítulo.</p>
+        <div class="acciones">
+          <button class="btn" id="btn-comprar">Compra tu copia ya</button>
+          <button class="btn sec" data-ir="login">Ya tengo cuenta</button>
+        </div>
+      </div>
+      <div class="libro" id="libro"></div>
+    </div>
+    <h2>Un vistazo al mundo del libro</h2>
+    <div class="galeria">
+      <figure><img src="img/fondo.jpg" alt="Mesa antigua con un mapa de América, tinteros, una lupa y libros viejos" loading="lazy"><figcaption>Mapas, tinta y libros antiguos.</figcaption></figure>
+      <figure><img src="img/extra.jpg" alt="Mesa antigua con mapa, diccionario inglés-español, tarjetas y auriculares" loading="lazy"><figcaption>Cada historia abre una puerta nueva.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- LOGIN -->
+<section id="v-login" class="vista">
+  <div class="ancho">
+    <div class="login caja">
+      <h2>Ingresar</h2>
+      <form id="form-login" novalidate>
+        <label for="l-usuario">Usuario</label>
+        <input id="l-usuario" type="text" autocomplete="username" autocapitalize="none" required>
+        <label for="l-clave">Contraseña</label>
+        <input id="l-clave" type="password" autocomplete="current-password" required>
+        <p class="error" id="l-error" role="alert"></p>
+        <div class="acciones">
+          <button class="btn" type="submit">Ingresar</button>
+          <button class="btn sec" type="button" data-ir="inicio">Volver</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- LECTOR -->
+<section id="v-lector" class="vista">
+  <div class="barra">
+    <span class="marca" id="marca-lector"></span>
+    <span>
+      <span id="saludo"></span>
+      <button class="btn sec chico" id="ir-admin" hidden>Panel admin</button>
+      <button class="btn sec chico" data-salir>Salir</button>
+    </span>
+  </div>
+  <div class="ancho">
+    <div class="lector">
+      <nav class="indice caja" aria-label="Capítulos">
+        <h3>Capítulos</h3>
+        <ol id="indice"></ol>
+      </nav>
+      <article class="caja capitulo" id="capitulo"></article>
+    </div>
+  </div>
+</section>
+
+<!-- ADMIN -->
+<section id="v-admin" class="vista">
+  <div class="barra">
+    <span class="marca">Panel de administración</span>
+    <span>
+      <button class="btn sec chico" id="ir-lector">Ver el libro</button>
+      <button class="btn sec chico" data-salir>Salir</button>
+    </span>
+  </div>
+  <div class="ancho">
+    <div class="pestanas" role="tablist">
+      <button class="btn sec" role="tab" id="t-cuentas" aria-selected="true">Cuentas</button>
+      <button class="btn sec" role="tab" id="t-caps" aria-selected="false">Capítulos</button>
+    </div>
+
+    <div id="p-cuentas" class="dos">
+      <div class="caja">
+        <h3>Crear cuenta</h3>
+        <form id="form-cuenta" novalidate>
+          <label for="c-nombre">Nombre de la persona</label>
+          <input id="c-nombre" type="text" required>
+          <label for="c-usuario">Usuario (sin espacios)</label>
+          <input id="c-usuario" type="text" autocapitalize="none" required>
+          <label for="c-clave">Contraseña (mínimo 6 caracteres)</label>
+          <input id="c-clave" type="text" required>
+          <p class="error" id="c-msg" role="alert"></p>
+          <button class="btn" type="submit">Crear y habilitar</button>
+        </form>
+      </div>
+      <div class="caja">
+        <h3>Cuentas</h3>
+        <div id="lista-cuentas"></div>
+      </div>
+    </div>
+
+    <div id="p-caps" class="dos" hidden>
+      <div class="caja">
+        <h3 id="cap-form-titulo">Nuevo capítulo</h3>
+        <form id="form-cap" novalidate>
+          <label for="k-num">Número</label>
+          <input id="k-num" type="number" min="1" step="1" required>
+          <label for="k-titulo">Título</label>
+          <input id="k-titulo" type="text" required>
+          <label for="k-texto">Texto (dejá una línea en blanco entre párrafos)</label>
+          <textarea id="k-texto" required></textarea>
+          <p class="error" id="k-msg" role="alert"></p>
+          <div class="acciones">
+            <button class="btn" type="submit">Guardar capítulo</button>
+            <button class="btn sec" type="button" id="k-cancelar" hidden>Cancelar edición</button>
+          </div>
+        </form>
+      </div>
+      <div class="caja">
+        <h3>Capítulos publicados</h3>
+        <div id="lista-caps"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL COMPRA -->
+<div class="modal" id="modal-compra" role="dialog" aria-modal="true" aria-labelledby="mc-t">
+  <div class="caja">
+    <h3 id="mc-t">Compra tu copia</h3>
+    <p id="mc-texto"></p>
+    <button class="btn" id="mc-cerrar">Entendido</button>
+  </div>
+</div>
+
+<script type="module">
+import { TITULO_LIBRO, MENSAJE_COMPRA, PORTADA, firebaseConfig, DOMINIO_INTERNO } from "./firebase-config.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, onSnapshot, query, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const $ = (id) => document.getElementById(id);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ---------- Textos y portada ---------- */
+document.title = TITULO_LIBRO;
+$("marca").textContent = TITULO_LIBRO;
+$("marca-lector").textContent = TITULO_LIBRO;
+$("titulo-h1").textContent = TITULO_LIBRO;
+$("mc-texto").textContent = MENSAJE_COMPRA;
+(function portada() {
+  const cont = $("libro");
+  const img = new Image();
+  img.alt = "Portada de " + TITULO_LIBRO;
+  img.onload = () => cont.replaceChildren(img);
+  img.onerror = () => {
+    const f = document.createElement("div");
+    f.className = "falsa";
+    f.textContent = TITULO_LIBRO;
+    cont.replaceChildren(f);
+  };
+  img.src = PORTADA;
+  img.onerror();           // muestra la tapa de respaldo mientras carga
+})();
+
+/* ---------- Navegación ---------- */
+function mostrar(nombre) {
+  document.querySelectorAll(".vista").forEach((v) => v.classList.remove("activa"));
+  $("v-" + nombre).classList.add("activa");
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("[data-ir]").forEach((b) => b.addEventListener("click", () => mostrar(b.dataset.ir)));
+document.querySelectorAll("[data-salir]").forEach((b) => b.addEventListener("click", () => signOut(auth)));
+$("btn-comprar").addEventListener("click", () => $("modal-compra").classList.add("abierto"));
+$("mc-cerrar").addEventListener("click", () => $("modal-compra").classList.remove("abierto"));
+$("ir-admin").addEventListener("click", () => mostrar("admin"));
+$("ir-lector").addEventListener("click", () => mostrar("lector"));
+
+const correo = (usuario) => usuario.trim().toLowerCase() + "@" + DOMINIO_INTERNO;
+const usuarioValido = (u) => /^[a-z0-9._-]{3,30}$/.test(u.trim().toLowerCase());
+
+/* ---------- Login ---------- */
+$("form-login").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const err = $("l-error");
+  err.textContent = "";
+  const u = $("l-usuario").value, c = $("l-clave").value;
+  if (!u || !c) { err.textContent = "Escribí tu usuario y tu contraseña."; return; }
+  try {
+    await signInWithEmailAndPassword(auth, correo(u), c);
+  } catch (ex) {
+    err.textContent = "Usuario o contraseña incorrectos.";
+  }
+});
+
+/* ---------- Sesión ---------- */
+let perfil = null;
+let cancelarCaps = null, cancelarCuentas = null;
+
+onAuthStateChanged(auth, async (user) => {
+  detener();
+  perfil = null;
+  if (!user) { mostrar("inicio"); return; }
+  try {
+    const snap = await getDoc(doc(db, "usuarios", user.uid));
+    perfil = snap.exists() ? snap.data() : null;
+  } catch (ex) { perfil = null; }
+
+  if (!perfil || perfil.habilitado !== true) {
+    await signOut(auth);
+    mostrar("login");
+    $("l-error").textContent = "Tu cuenta no está habilitada. Hablá con quien te vendió el libro.";
+    return;
+  }
+  $("saludo").textContent = "Hola, " + perfil.nombre + " ";
+  const esAdmin = perfil.rol === "admin";
+  $("ir-admin").hidden = !esAdmin;
+  iniciarLector();
+  if (esAdmin) iniciarAdmin();
+  mostrar("lector");
+});
+
+function detener() {
+  if (cancelarCaps) cancelarCaps();
+  if (cancelarCuentas) cancelarCuentas();
+  cancelarCaps = cancelarCuentas = null;
+}
+
+/* ---------- Lector ---------- */
+let capitulos = [];
+let actual = null;
+
+function iniciarLector() {
+  const q = query(collection(db, "capitulos"), orderBy("numero"));
+  cancelarCaps = onSnapshot(q, (snap) => {
+    capitulos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    if (!capitulos.find((c) => c.id === actual)) actual = capitulos[0] ? capitulos[0].id : null;
+    pintarIndice();
+    pintarCapitulo();
+    if (perfil && perfil.rol === "admin") pintarListaCaps();
+  }, () => {
+    $("capitulo").replaceChildren(vacio("No se pudieron cargar los capítulos."));
+  });
+}
+
+function vacio(texto) {
+  const d = document.createElement("p");
+  d.className = "vacio";
+  d.textContent = texto;
+  return d;
+}
+
+function pintarIndice() {
+  const ol = $("indice");
+  ol.replaceChildren();
+  capitulos.forEach((c) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.textContent = c.numero + ". " + c.titulo;
+    if (c.id === actual) b.setAttribute("aria-current", "true");
+    b.addEventListener("click", () => { actual = c.id; pintarIndice(); pintarCapitulo(); window.scrollTo(0, 0); });
+    li.appendChild(b);
+    ol.appendChild(li);
+  });
+}
+
+function pintarCapitulo() {
+  const cont = $("capitulo");
+  cont.replaceChildren();
+  const i = capitulos.findIndex((c) => c.id === actual);
+  if (i < 0) { cont.appendChild(vacio("Todavía no hay capítulos. Vuelve pronto.")); return; }
+  const c = capitulos[i];
+  const num = document.createElement("p"); num.className = "num"; num.textContent = "Capítulo " + c.numero;
+  const h = document.createElement("h2"); h.textContent = c.titulo;
+  const cuerpo = document.createElement("div"); cuerpo.className = "cuerpo";
+  String(c.texto || "").split(/\n\s*\n/).forEach((par) => {
+    if (!par.trim()) return;
+    const p = document.createElement("p"); p.textContent = par.trim(); cuerpo.appendChild(p);
+  });
+  const nav = document.createElement("div"); nav.className = "nav-cap";
+  const ant = document.createElement("button"); ant.className = "btn sec"; ant.textContent = "Capítulo anterior";
+  const sig = document.createElement("button"); sig.className = "btn"; sig.textContent = "Capítulo siguiente";
+  ant.disabled = i === 0; sig.disabled = i === capitulos.length - 1;
+  ant.style.visibility = ant.disabled ? "hidden" : "visible";
+  sig.style.visibility = sig.disabled ? "hidden" : "visible";
+  ant.addEventListener("click", () => { actual = capitulos[i - 1].id; pintarIndice(); pintarCapitulo(); window.scrollTo(0, 0); });
+  sig.addEventListener("click", () => { actual = capitulos[i + 1].id; pintarIndice(); pintarCapitulo(); window.scrollTo(0, 0); });
+  nav.append(ant, sig);
+  cont.append(num, h, cuerpo, nav);
+}
+
+/* ---------- Admin: pestañas ---------- */
+function pestana(cual) {
+  const cuentas = cual === "cuentas";
+  $("p-cuentas").hidden = !cuentas;
+  $("p-caps").hidden = cuentas;
+  $("t-cuentas").setAttribute("aria-selected", String(cuentas));
+  $("t-caps").setAttribute("aria-selected", String(!cuentas));
+}
+$("t-cuentas").addEventListener("click", () => pestana("cuentas"));
+$("t-caps").addEventListener("click", () => pestana("caps"));
+
+function iniciarAdmin() {
+  const q = query(collection(db, "usuarios"), orderBy("nombre"));
+  cancelarCuentas = onSnapshot(q, (snap) => {
+    const cont = $("lista-cuentas");
+    cont.replaceChildren();
+    if (snap.empty) { cont.appendChild(vacio("Todavía no hay cuentas.")); return; }
+    snap.docs.forEach((d) => {
+      const u = d.data();
+      const fila = document.createElement("div"); fila.className = "fila";
+      const info = document.createElement("div");
+      const nombre = document.createElement("strong"); nombre.textContent = u.nombre;
+      const det = document.createElement("small"); det.textContent = " · usuario: " + u.usuario + (u.rol === "admin" ? " · admin" : "");
+      const est = document.createElement("div");
+      est.className = "estado " + (u.habilitado ? "si" : "no");
+      est.textContent = u.habilitado ? "Habilitada" : "Deshabilitada";
+      info.append(nombre, det, est);
+      fila.appendChild(info);
+      if (u.rol !== "admin") {
+        const b = document.createElement("button");
+        b.className = "btn sec chico";
+        b.textContent = u.habilitado ? "Deshabilitar" : "Habilitar";
+        b.addEventListener("click", () => updateDoc(doc(db, "usuarios", d.id), { habilitado: !u.habilitado }));
+        fila.appendChild(b);
+      }
+      cont.appendChild(fila);
+    });
+  });
+}
+
+/* ---------- Admin: crear cuenta ---------- */
+$("form-cuenta").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("c-msg");
+  msg.className = "error"; msg.textContent = "";
+  const nombre = $("c-nombre").value.trim();
+  const usuario = $("c-usuario").value.trim().toLowerCase();
+  const clave = $("c-clave").value;
+  if (!nombre) { msg.textContent = "Escribí el nombre de la persona."; return; }
+  if (!usuarioValido(usuario)) { msg.textContent = "El usuario debe tener entre 3 y 30 letras, números, puntos o guiones, sin espacios."; return; }
+  if (clave.length < 6) { msg.textContent = "La contraseña debe tener al menos 6 caracteres."; return; }
+  try {
+    // App secundaria: así tu sesión de administrador no se cierra al crear la cuenta.
+    const sec = initializeApp(firebaseConfig, "secundaria-" + Date.now());
+    const authSec = getAuth(sec);
+    const cred = await createUserWithEmailAndPassword(authSec, correo(usuario), clave);
+    await signOut(authSec);
+    await setDoc(doc(db, "usuarios", cred.user.uid), {
+      nombre, usuario, habilitado: true, rol: "lector", creado: serverTimestamp(),
+    });
+    msg.className = "error ok";
+    msg.textContent = "Cuenta creada. Usuario: " + usuario;
+    $("form-cuenta").reset();
+  } catch (ex) {
+    msg.textContent = ex.code === "auth/email-already-in-use"
+      ? "Ese usuario ya existe. Elegí otro."
+      : "No se pudo crear la cuenta (" + (ex.code || "error") + ").";
+  }
+});
+
+/* ---------- Admin: capítulos ---------- */
+let editando = null;
+
+function pintarListaCaps() {
+  const cont = $("lista-caps");
+  cont.replaceChildren();
+  if (!capitulos.length) { cont.appendChild(vacio("Todavía no publicaste capítulos.")); return; }
+  capitulos.forEach((c) => {
+    const fila = document.createElement("div"); fila.className = "fila";
+    const t = document.createElement("strong"); t.textContent = c.numero + ". " + c.titulo;
+    const acc = document.createElement("div"); acc.className = "acciones"; acc.style.margin = "0";
+    const ed = document.createElement("button"); ed.className = "btn sec chico"; ed.textContent = "Editar";
+    const del = document.createElement("button"); del.className = "btn peligro chico"; del.textContent = "Borrar";
+    ed.addEventListener("click", () => {
+      editando = c.id;
+      $("k-num").value = c.numero; $("k-titulo").value = c.titulo; $("k-texto").value = c.texto || "";
+      $("cap-form-titulo").textContent = "Editando capítulo " + c.numero;
+      $("k-cancelar").hidden = false;
+      $("k-titulo").focus();
+    });
+    del.addEventListener("click", async () => {
+      if (confirm("¿Borrar el capítulo " + c.numero + "? No se puede deshacer.")) await deleteDoc(doc(db, "capitulos", c.id));
+    });
+    acc.append(ed, del);
+    fila.append(t, acc);
+    cont.appendChild(fila);
+  });
+}
+
+function limpiarFormCap() {
+  editando = null;
+  $("form-cap").reset();
+  $("cap-form-titulo").textContent = "Nuevo capítulo";
+  $("k-cancelar").hidden = true;
+}
+$("k-cancelar").addEventListener("click", limpiarFormCap);
+
+$("form-cap").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("k-msg");
+  msg.className = "error"; msg.textContent = "";
+  const numero = parseInt($("k-num").value, 10);
+  const titulo = $("k-titulo").value.trim();
+  const texto = $("k-texto").value.trim();
+  if (!numero || numero < 1) { msg.textContent = "Escribí el número del capítulo."; return; }
+  if (!titulo || !texto) { msg.textContent = "Faltan el título o el texto."; return; }
+  try {
+    if (editando) {
+      await updateDoc(doc(db, "capitulos", editando), { numero, titulo, texto });
+    } else {
+      await setDoc(doc(db, "capitulos", "cap-" + String(numero).padStart(4, "0") + "-" + Date.now()), {
+        numero, titulo, texto, creado: serverTimestamp(),
+      });
+    }
+    msg.className = "error ok";
+    msg.textContent = "Capítulo guardado.";
+    limpiarFormCap();
+  } catch (ex) {
+    msg.textContent = "No se pudo guardar (" + (ex.code || "error") + ").";
+  }
+});
+
+/* ---------- Luciérnagas (solo decoración) ---------- */
+(function luciernagas() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = $("luciernagas"), ctx = cv.getContext("2d");
+  let w, h;
+  const fit = () => { w = cv.width = innerWidth; h = cv.height = innerHeight; };
+  fit(); addEventListener("resize", fit);
+  const n = 34;
+  const L = Array.from({ length: n }, () => ({
+    x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+    r: 1 + Math.random() * 2, v: .15 + Math.random() * .35,
+    f: Math.random() * 6.28, a: Math.random() * 6.28,
+  }));
+  (function paso() {
+    ctx.clearRect(0, 0, w, h);
+    L.forEach((l) => {
+      l.a += (Math.random() - .5) * .08;
+      l.x += Math.cos(l.a) * l.v; l.y += Math.sin(l.a) * l.v - .08;
+      l.f += .03;
+      if (l.x < -10) l.x = w + 10; if (l.x > w + 10) l.x = -10;
+      if (l.y < -10) l.y = h + 10;
+      const b = .35 + .65 * Math.abs(Math.sin(l.f));
+      const g = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 7);
+      g.addColorStop(0, "rgba(240,200,130," + b + ")");
+      g.addColorStop(1, "rgba(240,200,130,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 7, 0, 6.283); ctx.fill();
+    });
+    requestAnimationFrame(paso);
+  })();
+})();
+</script>
+</body>
+</html>
