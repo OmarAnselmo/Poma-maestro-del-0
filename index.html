@@ -356,15 +356,21 @@ onAuthStateChanged(auth, async (user) => {
   detener();
   perfil = null;
   if (!user) { mostrar("inicio"); return; }
+  let detalle = "";
   try {
     const snap = await getDoc(doc(db, "usuarios", user.uid));
     perfil = snap.exists() ? snap.data() : null;
-  } catch (ex) { perfil = null; }
+    if (!snap.exists()) detalle = "No existe un documento en Firestore (colección usuarios) con este UID: " + user.uid;
+    else if (snap.data().habilitado !== true) detalle = "Tu cuenta no está habilitada. Hablá con quien te vendió el libro.";
+  } catch (ex) {
+    perfil = null;
+    detalle = "No se pudo leer tu perfil (" + (ex.code || ex.message) + "). UID: " + user.uid;
+  }
 
   if (!perfil || perfil.habilitado !== true) {
     await signOut(auth);
     mostrar("login");
-    $("l-error").textContent = "Tu cuenta no está habilitada. Hablá con quien te vendió el libro.";
+    $("l-error").textContent = detalle || "Tu cuenta no está habilitada. Hablá con quien te vendió el libro.";
     return;
   }
   $("saludo").textContent = "Hola, " + perfil.nombre + " ";
